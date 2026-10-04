@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#1b2030">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<title>ターンアラウンド定義</title>
+<style>
+:root{--ink:#1b2030;--ink2:#2a3148;--fg:#e8ecf5;--ok:#3ddbb0;--am:#ffb000;--bg:#0f121c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;overscroll-behavior:none;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+header{display:flex;gap:6px;padding:6px 8px;background:var(--ink);align-items:center;flex-wrap:wrap}
+button,select,input{font:inherit;color:var(--fg)}
+button{background:var(--ink2);border:1px solid #3b4566;border-radius:8px;padding:8px 12px;min-height:40px}
+button:disabled{opacity:.4}button:active{background:#3b4566}button.pri{background:var(--ok);color:#06241b;border-color:var(--ok);font-weight:600}
+button.del{color:#ff8a8a}
+.ic{width:40px;padding:0;display:grid;place-items:center}.ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#fw{position:relative}#fm{position:absolute;top:calc(100% + 6px);left:0;z-index:8;background:var(--ink);border:1px solid #3b4566;border-radius:10px;padding:6px;display:grid;gap:6px;min-width:170px}
+#fm[hidden]{display:none}#fm button{text-align:left}
+#info{white-space:nowrap;margin-left:auto;font-size:12px;opacity:.7}
+#wrap{flex:1;position:relative;min-height:0}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;background:repeating-conic-gradient(#20263a 0 25%,#181d2d 0 50%) 0 0/24px 24px}
+#empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;opacity:.6;pointer-events:none;padding:24px}
+.modal{position:fixed;inset:0;background:rgba(5,7,12,.7);display:grid;place-items:center;z-index:9}
+.modal[hidden]{display:none}
+.box{background:var(--ink);border:1px solid #3b4566;border-radius:14px;padding:14px;width:min(92vw,360px);display:grid;gap:10px}
+.box label{display:grid;gap:4px;font-size:12px;opacity:.9}
+.box select,.box input{background:var(--bg);border:1px solid #3b4566;border-radius:8px;padding:9px;min-height:40px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+#pc{width:100%;aspect-ratio:1;background:repeating-conic-gradient(#20263a 0 25%,#181d2d 0 50%) 0 0/20px 20px;border-radius:8px;image-rendering:pixelated}
+#cv{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+#pvbox{touch-action:none;user-select:none;-webkit-user-select:none}
+#pi{font-size:12px;opacity:.7;text-align:center;min-height:1.4em}
+</style></head><body>
+<div id="app">
+<header>
+<div id="fw"><button id="bFile" class="ic" title="ファイル" aria-label="ファイル"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+<div id="fm" hidden><button id="bOpen">画像を開く</button><button id="bImg">画像を上書き保存</button><button id="bSave">JSON保存</button><button id="bLoad">JSON読込</button></div></div>
+<button id="bPrev">プレビュー</button>
+<button id="bUndo" class="ic" title="アンドゥ" aria-label="アンドゥ" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button id="bRedo" class="ic" title="リドゥ" aria-label="リドゥ" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+<button id="bCopy" class="ic" title="コピー" aria-label="コピー" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></button><button id="bCut" class="ic" title="切り取り" aria-label="切り取り" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></button><button id="bPaste" class="ic" title="貼り付け" aria-label="貼り付け" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></button>
+<span id="info"></span>
+</header>
+<div id="wrap"><canvas id="cv"></canvas><div id="empty">「画像を開く」でターンアラウンド画像を読み込み、<br>スワイプで矩形を作り、ダブルタップで定義します</div></div>
+</div>
+<input id="fImg" type="file" accept="image/*" hidden><input id="fJson" type="file" accept=".json,application/json" hidden>
+
+<div id="cm" hidden style="position:fixed;inset:0;z-index:9"><div id="cmb" class="box" style="position:absolute;width:auto;padding:6px"><button id="cmFlip">左右反転</button><button id="cmV">上下反転</button><button id="cmR">右に90°回転</button><button id="cmL">左に90°回転</button></div></div>
+
+<div id="dlg" class="modal" hidden><div class="box">
+<label>モーション<select id="dM"></select></label>
+<label>向き<select id="dD"></select></label>
+<label>フレーム番号<input id="dF" type="number" min="1" step="1" inputmode="numeric"></label>
+<div class="row"><button id="dDel" class="del">矩形を削除</button><button id="dCancel">キャンセル</button><button id="dOk" class="pri">決定</button></div>
+</div></div>
+
+<div id="pv" class="modal" hidden><div class="box" id="pvbox">
+<canvas id="pc" width="320" height="320"></canvas>
+<div class="row"><select id="pM"></select><select id="pD"></select></div>
+<label>速度 <input id="pF" type="range" min="1" max="24" value="8"></label>
+<div id="pi"></div><div style="font-size:11px;opacity:.5;text-align:center">スワイプで向き／ダブルタップで次のモーション</div>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const MOTIONS=['歩き','走り','矢を射る','火球を放つ'];
+const ARW={'正面':'↓','背面':'↑','右向き':'→','左向き':'←','右正面向き':'↘\uFE0E','左正面向き':'↙\uFE0E','右背面向き':'↗\uFE0E','左背面向き':'↖\uFE0E'};
+const lab=v=>ARW[v]?ARW[v]+v:v;
+const DIRS=['正面','背面','右向き','左向き','右正面向き','左正面向き','右背面向き','左背面向き'];
+let img=null,blob=null,fh=null,lp,name='sheet.png',frames=[],view={x:0,y:0,s:1},cur=null,sel=-1,last={m:MOTIONS[0],d:DIRS[0]};
+const cv=$('cv'),ctx=cv.getContext('2d');
+const base=()=>name.replace(/\.[^.]+$/,'');
+
+/* ---------- アンドゥ/リドゥ ---------- */
+let undo=[],redo=[];
+const snap=()=>frames.map(f=>({...f}));
+function ub(){$('bUndo').disabled=!undo.length;$('bRedo').disabled=!redo.length}
+function pushU(e){undo.push(e);if(undo.length>60)undo.shift();redo=[];ub()}
+function swap(e){let ch=false;
+  if(e.p){const g=img.getContext('2d'),cu=g.getImageData(e.p.x,e.p.y,e.p.d.width,e.p.d.height);g.putImageData(e.p.d,e.p.x,e.p.y);e.p.d=cu;ch=true}
+  const t=frames;frames=e.f;e.f=t;if(sel>=frames.length)sel=-1;draw();info();
+  if(ch)img.toBlob(b=>{blob=b;save()});else save()}
+$('bUndo').onclick=()=>{const e=undo.pop();if(!e)return;swap(e);redo.push(e);ub()};
+$('bRedo').onclick=()=>{const e=redo.pop();if(!e)return;swap(e);undo.push(e);ub()};
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();(e.shiftKey?$('bRedo'):$('bUndo')).click()}});
+
+/* ---------- ファイルメニュー / コピー・切り取り・貼り付け ---------- */
+let clip=null;
+function cb(){const h=sel<0||!frames[sel];$('bCopy').disabled=h;$('bCut').disabled=h;$('bPaste').disabled=!clip||!img}
+$('bFile').onclick=()=>{$('fm').hidden=!$('fm').hidden};
+$('fm').addEventListener('click',()=>{$('fm').hidden=true});
+addEventListener('pointerdown',e=>{if(!$('fm').hidden&&!e.target.closest('#fw'))$('fm').hidden=true},true);
+$('bCopy').onclick=()=>{if(sel<0||!frames[sel])return;clip={...frames[sel]};cb();toast('矩形をコピーしました')};
+$('bCut').onclick=()=>{if(sel<0||!frames[sel])return;clip={...frames[sel]};pushU({f:snap()});frames.splice(sel,1);sel=-1;draw();info();save();toast('矩形を切り取りました')};
+$('bPaste').onclick=()=>{
+  if(!clip||!img)return;pushU({f:snap()});
+  const r=cv.getBoundingClientRect(),c=toImg({x:r.width/2,y:r.height/2}),w=Math.min(clip.w,img.width),h=Math.min(clip.h,img.height),cl=(v,hi)=>Math.max(0,Math.min(hi,v));
+  const mx=Math.max(0,...frames.filter(o=>clip.motion&&o.motion===clip.motion&&o.dir===clip.dir).map(o=>o.frame));
+  frames.push({x:Math.round(cl(c.x-w/2,img.width-w)),y:Math.round(cl(c.y-h/2,img.height-h)),w,h,motion:clip.motion,dir:clip.dir,frame:clip.motion&&clip.dir?mx+1:0});
+  sel=frames.length-1;draw();info();save()};
+
+/* ---------- 保存・復帰 (IndexedDB) ---------- */
+const db=new Promise((res,rej)=>{const r=indexedDB.open('sprite-def',1);r.onupgradeneeded=()=>r.result.createObjectStore('s');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const idb=async(mode,f)=>{const d=await db;return new Promise((res,rej)=>{const t=d.transaction('s',mode),q=f(t.objectStore('s'));t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)})};
+let tm;const save=(now)=>{clearTimeout(tm);const go=()=>{if(blob){const st={name,blob,frames,view};idb('readwrite',s=>s.put({...st,fh},'cur')).catch(()=>idb('readwrite',s=>s.put(st,'cur')).catch(()=>{}))}};now?go():tm=setTimeout(go,300)};
+addEventListener('pagehide',()=>save(true));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save(true)});
+
+/* ---------- 読み込み ---------- */
+function loadBlob(b,nm,st,h){
+  const u=URL.createObjectURL(b),im=new Image();
+  im.onload=()=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);URL.revokeObjectURL(u);img=c;undo=[];redo=[];ub();fh=h||null;blob=b;name=nm;frames=st?st.frames:[];sel=-1;
+    if(st&&st.view)view=st.view;else fit();
+    $('empty').hidden=true;draw();info();save()};
+  im.src=u;
+}
+function fit(){const r=cv.getBoundingClientRect();if(!img)return;const s=Math.min(r.width/img.width,r.height/img.height);view={s,x:(r.width-img.width*s)/2,y:(r.height-img.height*s)/2}}
+$('bOpen').onclick=async()=>{
+  if(window.showOpenFilePicker){try{const [h]=await showOpenFilePicker({types:[{description:'画像',accept:{'image/*':['.png','.jpg','.jpeg','.webp','.gif','.bmp']}}]});const f=await h.getFile();loadBlob(f,f.name,null,h);return}catch(e){if(e.name==='AbortError')return}}
+  $('fImg').click()};
+const MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp'};
+function toast(t){$('info').textContent=t;setTimeout(info,2800)}
+$('bImg').onclick=async()=>{
+  if(!img){alert('先に画像を開いてください');return}
+  const ext=name.split('.').pop().toLowerCase();let fn=name,mt=MIME[ext];
+  if(!mt){mt='image/png';fn=base()+'.png';alert('この形式への書き出しは非対応のため、PNGで保存します')}
+  const out=await new Promise(r=>img.toBlob(r,mt,.95));
+  if(fh){try{if((await fh.requestPermission({mode:'readwrite'}))==='granted'){const w=await fh.createWritable();await w.write(out);await w.close();toast('上書き保存しました');return}}catch(e){}}
+  if(window.showSaveFilePicker){try{const h=await showSaveFilePicker({suggestedName:fn,types:[{accept:{[mt]:['.'+fn.split('.').pop()]}}]});const w=await h.createWritable();await w.write(out);await w.close();fh=h;save();toast('保存しました');return}catch(e){if(e.name==='AbortError')return}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(out);a.download=fn;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('ダウンロードしました')};
+function showMenu(p){const r=cv.getBoundingClientRect(),b=$('cmb');$('cm').hidden=false;
+  b.style.left=Math.max(8,Math.min(innerWidth-150,r.left+p.x-50))+'px';b.style.top=Math.max(8,Math.min(innerHeight-210,r.top+p.y-64))+'px'}
+$('cm').onclick=e=>{if(e.target===$('cm'))$('cm').hidden=true};
+function xf(k){$('cm').hidden=true;const f=frames[sel];if(!f)return;
+  const rot=k==='r'||k==='l',w=rot?f.h:f.w,h=rot?f.w:f.h,g=img.getContext('2d'),
+    nx=rot?Math.round(Math.max(0,Math.min(img.width-w,f.x+f.w/2-w/2))):f.x,ny=rot?Math.round(Math.max(0,Math.min(img.height-h,f.y+f.h/2-h/2))):f.y,
+    ux=Math.min(f.x,nx),uy=Math.min(f.y,ny),uw=Math.max(f.x+f.w,nx+w)-ux,uh=Math.max(f.y+f.h,ny+h)-uy;
+  pushU({f:snap(),p:{x:ux,y:uy,d:g.getImageData(ux,uy,uw,uh)}});
+  const c=document.createElement('canvas');c.width=f.w;c.height=f.h;c.getContext('2d').drawImage(img,f.x,f.y,f.w,f.h,0,0,f.w,f.h);
+  g.save();g.clearRect(f.x,f.y,f.w,f.h);
+  if(k==='h'){g.translate(f.x+f.w,f.y);g.scale(-1,1);g.drawImage(c,0,0)}
+  else if(k==='v'){g.translate(f.x,f.y+f.h);g.scale(1,-1);g.drawImage(c,0,0)}
+  else{g.translate(nx+w/2,ny+h/2);g.rotate(k==='r'?Math.PI/2:-Math.PI/2);g.drawImage(c,-f.w/2,-f.h/2);f.x=nx;f.y=ny;f.w=w;f.h=h}
+  g.restore();draw();info();img.toBlob(b=>{blob=b;save()})}
+$('cmFlip').onclick=()=>xf('h');$('cmV').onclick=()=>xf('v');$('cmR').onclick=()=>xf('r');$('cmL').onclick=()=>xf('l');
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+$('fImg').onchange=e=>{const f=e.target.files[0];if(f)loadBlob(f,f.name);e.target.value=''};
+$('bLoad').onclick=()=>$('fJson').click();
+$('fJson').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const j=JSON.parse(await f.text());pushU({f:snap()});frames=(j.frames||[]).map(o=>({x:+o.x,y:+o.y,w:+o.w,h:+o.h,motion:o.motion||'',dir:o.dir||'',frame:+o.frame||0})).filter(o=>o.w>0&&o.h>0);sel=-1;draw();info();save()}catch(_){alert('JSONを読み込めませんでした')}};
+$('bSave').onclick=()=>{
+  if(!img){alert('先に画像を開いてください');return}
+  const out={image:name,width:img.width,height:img.height,
+    frames:[...frames].sort((a,b)=>(MOTIONS.indexOf(a.motion)-MOTIONS.indexOf(b.motion))||(DIRS.indexOf(a.dir)-DIRS.indexOf(b.dir))||(a.frame-b.frame))};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));
+  a.download=base()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+function info(){const n=frames.filter(f=>f.motion&&f.dir&&f.frame).length;$('info').textContent=img?`${frames.length}矩形 / 定義済み${n}`:''}
+
+/* ---------- 描画 ---------- */
+function resize(){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);draw()}
+addEventListener('resize',resize);
+function draw(){
+  cb();const d=devicePixelRatio||1,{x,y,s}=view;
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);
+  if(!img)return;
+  ctx.setTransform(d*s,0,0,d*s,d*x,d*y);ctx.imageSmoothingEnabled=s<2;
+  ctx.drawImage(img,0,0);
+  ctx.font=`${12/s}px system-ui,sans-serif`;ctx.textBaseline='top';
+  const all=cur?[...frames,cur]:frames;
+  all.forEach((f,i)=>{
+    const ok=f.motion&&f.dir&&f.frame,act=i===sel,tmp=f===cur;
+    ctx.lineWidth=(act?3:2)/s;ctx.setLineDash(ok||tmp?[]:[5/s,4/s]);
+    ctx.strokeStyle=tmp||act?'#ffb000':ok?'#3ddbb0':'#c8cee0';
+    ctx.strokeRect(f.x,f.y,f.w,f.h);
+    if(ok){const t=`${f.motion[0]}${ARW[f.dir]||''}${f.frame}`;
+      ctx.fillStyle='rgba(15,18,28,.75)';const w=ctx.measureText(t).width+4/s;ctx.fillRect(f.x,f.y,w,14/s);ctx.fillStyle='#3ddbb0';ctx.fillText(t,f.x+2/s,f.y+1/s)}
+  });
+  if(sel>=0&&frames[sel]&&!cur){const f=frames[sel],hs=7/s;ctx.setLineDash([]);ctx.lineWidth=1.5/s;ctx.fillStyle='#ffb000';ctx.strokeStyle='#1b2030';
+    for(const [hx,hy] of HS){ctx.beginPath();ctx.rect(f.x+f.w*hx-hs,f.y+f.h*hy-hs,hs*2,hs*2);ctx.fill();ctx.stroke()}}
+}
+
+/* ---------- タッチ操作 ---------- */
+const ptr=new Map();let drag=null,pinch=null,tap={t:0,x:0,y:0};
+const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+const toImg=p=>({x:(p.x-view.x)/view.s,y:(p.y-view.y)/view.s});
+const clampPt=q=>({x:Math.max(0,Math.min(img.width,q.x)),y:Math.max(0,Math.min(img.height,q.y))});
+const HS=[[0,0],[1,0],[0,1],[1,1],[.5,0],[.5,1],[0,.5],[1,.5]];
+const hitHandle=p=>{const f=frames[sel];for(const [hx,hy] of HS){const sx=view.x+(f.x+f.w*hx)*view.s,sy=view.y+(f.y+f.h*hy)*view.s;if(Math.hypot(p.x-sx,p.y-sy)<24)return[hx,hy]}return null};
+const hit=q=>{for(let i=frames.length-1;i>=0;i--){const f=frames[i];if(q.x>=f.x&&q.x<=f.x+f.w&&q.y>=f.y&&q.y<=f.y+f.h)return i}return -1};
+cv.addEventListener('pointerdown',e=>{
+  if(!img)return;cv.setPointerCapture(e.pointerId);const p=pos(e);ptr.set(e.pointerId,p);
+  if(ptr.size===1){drag={s:p,moved:false,mode:'new'};
+    clearTimeout(lp);lp=setTimeout(()=>{if(drag&&!drag.moved&&ptr.size===1){const i=hit(toImg(drag.s));if(i>=0){sel=i;drag.long=true;draw();showMenu(drag.s)}}},500);
+    if(sel>=0&&frames[sel]){const h=hitHandle(p),f=frames[sel],q=toImg(p);
+      if(h){drag.mode='rs';drag.h=h;drag.o={...f};drag.sn=snap()}
+      else if(q.x>=f.x&&q.x<=f.x+f.w&&q.y>=f.y&&q.y<=f.y+f.h){drag.mode='mv';drag.o={...f};drag.sn=snap()}}}
+  else if(ptr.size===2){clearTimeout(lp);drag=null;cur=null;const [a,b]=[...ptr.values()],c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+    pinch={d:Math.hypot(a.x-b.x,a.y-b.y)||1,s:view.s,ip:toImg(c)};draw()}
+});
+cv.addEventListener('pointermove',e=>{
+  if(!ptr.has(e.pointerId))return;const p=pos(e);ptr.set(e.pointerId,p);
+  if(pinch&&ptr.size===2){const [a,b]=[...ptr.values()],c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+    const s=Math.max(.05,Math.min(40,pinch.s*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d));
+    view={s,x:c.x-pinch.ip.x*s,y:c.y-pinch.ip.y*s};draw()}
+  else if(drag&&!drag.long){
+    if(!drag.moved&&Math.hypot(p.x-drag.s.x,p.y-drag.s.y)>8){drag.moved=true;clearTimeout(lp)}
+    if(drag.moved){
+      if(drag.mode==='new'){const a=clampPt(toImg(drag.s)),b=clampPt(toImg(p));
+        cur={x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)}}
+      else{const a=toImg(drag.s),b=toImg(p),f=frames[sel],o=drag.o,cl=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+        if(drag.mode==='mv'){f.x=cl(o.x+b.x-a.x,0,img.width-o.w);f.y=cl(o.y+b.y-a.y,0,img.height-o.h)}
+        else{const [hx,hy]=drag.h,c=clampPt(b);let l=o.x,r=o.x+o.w,t=o.y,bt=o.y+o.h;
+          if(hx===0)l=c.x;if(hx===1)r=c.x;if(hy===0)t=c.y;if(hy===1)bt=c.y;
+          f.x=Math.min(l,r);f.w=Math.max(4,Math.abs(r-l));f.y=Math.min(t,bt);f.h=Math.max(4,Math.abs(bt-t))}}
+      draw()}}
+});
+function up(e){
+  if(!ptr.has(e.pointerId))return;const p=pos(e);ptr.delete(e.pointerId);
+  if(ptr.size<2)pinch=null;clearTimeout(lp);
+  if(drag&&ptr.size===0){
+    if(drag.long){drag=null;return}
+    if(drag.moved){
+      if(drag.mode!=='new'){pushU({f:drag.sn});const f=frames[sel];['x','y','w','h'].forEach(k=>f[k]=Math.round(f[k]));save()}
+      else if(cur&&cur.w>=4&&cur.h>=4){pushU({f:snap()});frames.push({x:Math.round(cur.x),y:Math.round(cur.y),w:Math.round(cur.w),h:Math.round(cur.h),motion:'',dir:'',frame:0});sel=frames.length-1;save();info()}
+      cur=null;tap.t=0;
+    }else{
+      const now=Date.now(),q=toImg(p);
+      if(now-tap.t<350&&Math.hypot(p.x-tap.x,p.y-tap.y)<24){tap.t=0;const i=hit(q);if(i>=0){sel=i;openDlg(i)}}
+      else{tap={t:now,x:p.x,y:p.y};const i=hit(q);sel=i}
+    }
+    draw();
+  }
+  if(ptr.size===0)drag=null;
+}
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>{cur=null;up(e)});
+cv.addEventListener('wheel',e=>{if(!img)return;e.preventDefault();const p=pos(e),ip=toImg(p),s=Math.max(.05,Math.min(40,view.s*Math.exp(-e.deltaY*.0015)));view={s,x:p.x-ip.x*s,y:p.y-ip.y*s};draw()},{passive:false});
+cv.addEventListener('gesturestart',e=>e.preventDefault());
+
+/* ---------- 定義ダイアログ ---------- */
+const opt=(sel,list,blank)=>{sel.innerHTML=(blank?`<option value="">${blank}</option>`:'')+list.map(v=>`<option value="${v}">${lab(v)}</option>`).join('')};
+opt($('dM'),MOTIONS,'未設定');opt($('dD'),DIRS,'未設定');
+let editing=-1;
+function openDlg(i){
+  editing=i;const f=frames[i];
+  $('dM').value=f.motion||last.m;$('dD').value=f.dir||last.d;
+  $('dF').value=f.frame||(frames.filter((o,j)=>j!==i&&o.motion===$('dM').value&&o.dir===$('dD').value).length+1);
+  $('dlg').hidden=false;
+}
+$('dM').onchange=$('dD').onchange=()=>{if(editing<0||frames[editing].frame)return;$('dF').value=frames.filter((o,j)=>j!==editing&&o.motion===$('dM').value&&o.dir===$('dD').value).length+1};
+$('dOk').onclick=()=>{pushU({f:snap()});const f=frames[editing];f.motion=$('dM').value;f.dir=$('dD').value;f.frame=Math.max(0,parseInt($('dF').value)||0);
+  if(f.motion)last.m=f.motion;if(f.dir)last.d=f.dir;closeDlg();save();info()};
+$('dDel').onclick=()=>{pushU({f:snap()});frames.splice(editing,1);sel=-1;closeDlg();save();info()};
+$('dCancel').onclick=closeDlg;
+$('dlg').onclick=e=>{if(e.target===$('dlg'))closeDlg()};
+function closeDlg(){$('dlg').hidden=true;editing=-1;draw()}
+
+/* ---------- プレビュー ---------- */
+const pc=$('pc'),px=pc.getContext('2d');let raf=0,list=[];
+const defined=()=>frames.filter(f=>f.motion&&f.dir&&f.frame>0);
+$('bPrev').onclick=()=>{
+  if(!img){alert('先に画像を開いてください');return}
+  if(!defined().length){alert('モーション・向き・フレーム番号を定義した矩形がまだありません');return}
+  fillPM();$('pv').hidden=false;start()};
+$('pv').onclick=e=>{if(e.target===$('pv')){$('pv').hidden=true;cancelAnimationFrame(raf)}};
+function fillPM(){const ms=MOTIONS.filter(m=>defined().some(f=>f.motion===m)),extra=[...new Set(defined().map(f=>f.motion))].filter(m=>!MOTIONS.includes(m));
+  const keep=$('pM').value;opt($('pM'),[...ms,...extra]);if([...ms,...extra].includes(keep))$('pM').value=keep;fillPD()}
+function fillPD(){const m=$('pM').value,ds=DIRS.filter(d=>defined().some(f=>f.motion===m&&f.dir===d)),keep=$('pD').value;
+  opt($('pD'),ds);if(ds.includes(keep))$('pD').value=keep}
+$('pM').onchange=()=>{fillPD();start()};$('pD').onchange=start;
+let pg=null,ptap=0,flash='',flashT=0;
+const say=t=>{flash=t;flashT=performance.now()+900};
+const SW={0:'右向き',1:'右背面向き',2:'背面',3:'左背面向き',4:'左向き','-4':'左向き','-3':'左正面向き','-2':'正面','-1':'右正面向き'};
+const pb=$('pvbox');
+pb.addEventListener('pointerdown',e=>{if(e.target.closest('select,input'))return;pb.setPointerCapture(e.pointerId);pg={x:e.clientX,y:e.clientY}});
+pb.addEventListener('pointerup',e=>{if(!pg)return;const dx=e.clientX-pg.x,dy=e.clientY-pg.y,L=Math.hypot(dx,dy);pg=null;
+  if(L>=30){const d=SW[Math.round(Math.atan2(-dy,dx)*4/Math.PI)];
+    if([...$('pD').options].some(o=>o.value===d)){$('pD').value=d;start();say(lab(d))}else say(lab(d)+'は未定義')}
+  else if(L<10){const n=Date.now();if(n-ptap<350){ptap=0;const o=$('pM').options;$('pM').selectedIndex=($('pM').selectedIndex+1)%o.length;fillPD();start();say($('pM').value)}else ptap=n}});
+pb.addEventListener('pointercancel',()=>{pg=null});
+function start(){
+  cancelAnimationFrame(raf);
+  list=defined().filter(f=>f.motion===$('pM').value&&f.dir===$('pD').value).sort((a,b)=>a.frame-b.frame);
+  if(!list.length){px.clearRect(0,0,320,320);return}
+  const mw=Math.max(...list.map(f=>f.w)),mh=Math.max(...list.map(f=>f.h)),sc=Math.min(296/mw,296/mh,6);
+  let i=0,acc=0,prev=performance.now();
+  const step=t=>{
+    acc+=t-prev;prev=t;const dt=1000/$('pF').value;
+    while(acc>=dt){acc-=dt;i=(i+1)%list.length}
+    const f=list[i];px.clearRect(0,0,320,320);px.imageSmoothingEnabled=sc<1;
+    px.drawImage(img,f.x,f.y,f.w,f.h,(320-f.w*sc)/2,312-f.h*sc,f.w*sc,f.h*sc);
+    $('pi').textContent=performance.now()<flashT?flash:`フレーム ${f.frame}（${i+1}/${list.length}）`;
+    raf=requestAnimationFrame(step)};
+  raf=requestAnimationFrame(step);
+}
+
+/* ---------- 起動 ---------- */
+resize();
+idb('readonly',s=>s.get('cur')).then(d=>{if(d&&d.blob)loadBlob(d.blob,d.name,d,d.fh)}).catch(()=>{});
+if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script></body></html>
